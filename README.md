@@ -1,6 +1,6 @@
 # Unity_DrawApertureBlades
 
-![](https://github.com/XJINE/Unity_DrawApertureBlades/blob/main/Screenshot.png)
+<img src="https://github.com/XJINE/Unity_DrawApertureBlades/blob/main/Screenshot.png" width="100%" height="auto" />
 
 To make a texture resembling lens aperture blades.
 
