@@ -1,0 +1,34 @@
+#pragma kernel DrawApertureBlades
+
+RWTexture2D<float4> _ApertureBladeTexture;
+int                 _BladeNum;
+float               _Radius; // 0 ~ 1
+
+[numthreads(8, 8, 1)]
+void DrawApertureBlades(uint3 dtId : SV_DispatchThreadID)
+{
+    const float EPS = 1e-7;
+    const float PI  = 3.14159265359;
+
+    float2 size;
+    _ApertureBladeTexture.GetDimensions(size.x, size.y);
+
+    // STEP1: Normalize the coordinates to a -0.5 ~ 0.5 range. The origin is at the center.
+    float2 uv = dtId.xy / size - float2(0.5 + EPS, 0.5 + EPS); // "+ EPS" to avoid 0 division.
+
+    // STEP2: Get the angle of the point.
+    float angle = atan2(uv.x, uv.y) + 2.0 * PI; // "+ 2.0 * PI" to avoid negative values
+          angle = angle % (2.0 * PI / _BladeNum);
+
+    // STEP3:
+    float circle   = 0.5 * _Radius; // Normalize the 0 ~ 1 _Radius value to the UV space's max radius of 0.5.
+    float polygon  = cos(PI / _BladeNum) / cos(PI / _BladeNum - angle);
+          polygon *= circle; // scale to the circle radius
+
+    // STEP4: Check the point is inside the aperture shape.
+    float pos      = length(uv); // the distance from the center.
+    float aperture = lerp(polygon, circle, _Radius * _Radius * _Radius);
+    float color    = step(pos, aperture); // check 1:inside or 0:outside
+
+    _ApertureBladeTexture[dtId.xy] = float4(color, color, color, 1.0);
+}
